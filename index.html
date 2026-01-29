@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emoji Sprite Editor</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="left-panel">
+        <div class="custom-emoji-section">
+          <h3>Custom</h3>
+          <div class="custom-input-group">
+            <input type="text" id="custom-emoji-input" placeholder="Add..." />
+            <button id="add-custom-emoji">+</button>
+          </div>
+          <div id="custom-emoji-list"></div>
+        </div>
+        <div class="search-emoji-section">
+          <h3>Search</h3>
+          <div style="display: flex; gap: 4px; margin-bottom: 4px;">
+            <input type="text" id="emoji-search-input" placeholder="Search emojis..." style="flex: 1;" />
+            <select id="skin-tone-selector" title="Skin tone">
+              <option value="none">✋</option>
+              <option value="light">✋🏻</option>
+              <option value="mediumLight">✋🏼</option>
+              <option value="medium">✋🏽</option>
+              <option value="mediumDark">✋🏾</option>
+              <option value="dark">✋🏿</option>
+            </select>
+          </div>
+          <div id="emoji-search-results"></div>
+        </div>
+        <h2>Palette</h2>
+        <div id="emoji-palette"></div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+      </div>
+
+      <div class="right-panel">
+        <div class="panel-header">
+          <h2>Properties</h2>
+          <button id="help-button" class="help-button" title="Help">❓</button>
+        </div>
+        <div class="view-options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="show-origin" checked />
+            <span>Guides</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="axes-on-top" />
+            <span>Axes on top</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="border-on-top" />
+            <span>Border on top</span>
+          </label>
+        </div>
+        <div id="property-panel">
+          <div class="property-group">
+            <label>Text: <input type="text" id="prop-text" /></label>
+          </div>
+          <div class="property-group">
+            <label>X: <input type="number" id="prop-x" step="1" /></label>
+            <label>Y: <input type="number" id="prop-y" step="1" /></label>
+          </div>
+          <div class="property-group">
+            <label>Rotation: <input type="number" id="prop-rotation" step="1" /></label>
+          </div>
+          <div class="property-group">
+            <label>Scale X: <input type="number" id="prop-scaleX" step="0.1" min="0.1" /></label>
+            <label>Scale Y: <input type="number" id="prop-scaleY" step="0.1" min="0.1" /></label>
+          </div>
+          <div class="layer-controls">
+            <h3>Layer Order</h3>
+            <div class="button-group">
+              <button id="layer-front" title="To Front">⬆️⬆️</button>
+              <button id="layer-forward" title="Forward">⬆️</button>
+            </div>
+            <div class="button-group">
+              <button id="layer-back" title="To Back">⬇️⬇️</button>
+              <button id="layer-backward" title="Backward">⬇️</button>
+            </div>
+            <div class="button-group">
+              <button id="delete-sprite" class="delete-button">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-group" style="padding: 8px 0;">
+          <button id="clear-canvas">Clear</button>
+        </div>
+
+        <div class="export-section">
+          <h3>Export/Import</h3>
+          <textarea id="json-data" placeholder="JSON data..." rows="3"></textarea>
+          <div class="button-group">
+            <button id="export-json">Export</button>
+            <button id="import-json">Import</button>
+          </div>
+          <div class="button-group">
+            <button id="import-clipboard">Import Clipboard</button>
+          </div>
+          <div class="button-group">
+            <button id="export-png">Export PNG...</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="help-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>How to Use</h2>
+          <button id="close-help" class="close-button">✕</button>
+        </div>
+        <div class="modal-body">
+          <h3>Controls</h3>
+          <ul>
+            <li>Right click emoji to add or remove favorites.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="export-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Export PNG</h2>
+          <button id="close-export" class="close-button">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="control-group">
+            <label for="export-scale">Scale (pixels per unit)</label>
+            <input type="number" id="export-scale" min="1" max="1000" step="1" value="80">
+          </div>
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="export-crop" checked>
+              Crop to content (removes centered origin)
+            </label>
+          </div>
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="export-border" checked>
+              Add 1px transparent border
+            </label>
+          </div>
+          <div class="button-group">
+            <button id="export-png-confirm">Export</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

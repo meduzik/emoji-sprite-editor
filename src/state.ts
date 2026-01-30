@@ -16,6 +16,7 @@ export class StateManager {
 			showOrigin: true,
 			axesOnTop: false,
 			borderOnTop: false,
+			customFont: '@googlefont:Noto Color Emoji',
 		};
 		// Don't save snapshot here - let loadFromLocalStorage handle it
 		// or it will be saved on first user action
@@ -94,16 +95,29 @@ export class StateManager {
 
 	setShowOrigin(show: boolean) {
 		this.state.showOrigin = show;
+		this.saveSnapshot();
 		this.notifyListeners();
 	}
 
 	setAxesOnTop(onTop: boolean) {
 		this.state.axesOnTop = onTop;
+		this.saveSnapshot();
 		this.notifyListeners();
 	}
 
 	setBorderOnTop(onTop: boolean) {
 		this.state.borderOnTop = onTop;
+		this.saveSnapshot();
+		this.notifyListeners();
+	}
+
+	getCustomFontInput(): string {
+		return this.state.customFont;
+	}
+
+	setCustomFontInput(fontInput: string) {
+		this.state.customFont = fontInput;
+		this.saveSnapshot();
 		this.notifyListeners();
 	}
 
@@ -207,7 +221,7 @@ export class StateManager {
 		return JSON.stringify(compactSprites);
 	}
 
-	exportPNG(scale: number = 80, crop: boolean = false, addBorder: boolean = true): void {
+	exportPNG(scale: number = 80, crop: boolean = false, addBorder: boolean = true, fontFamily: string = 'Arial'): void {
 		// Scale is "pixels per world unit" - divide by 80 to get the multiplier
 		const scaleFactor = scale / 80;
 		const baseFontSize = 80; // Our base font size in pixels
@@ -226,7 +240,7 @@ export class StateManager {
 		}
 
 		// Set font for measuring
-		tempCtx.font = `${baseFontSize}px Arial`;
+		tempCtx.font = `${baseFontSize}px ${fontFamily}`;
 
 		// Calculate bounds of all sprites in world space
 		let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -318,7 +332,7 @@ export class StateManager {
 			tempCtx.save();
 
 			// Calculate sprite bounds for pen offset
-			tempCtx.font = `${baseFontSize}px Arial`;
+			tempCtx.font = `${baseFontSize}px ${fontFamily}`;
 			const metrics = tempCtx.measureText(sprite.emoji);
 			const left = metrics.actualBoundingBoxLeft;
 			const right = metrics.actualBoundingBoxRight;
@@ -340,7 +354,7 @@ export class StateManager {
 			tempCtx.translate(penX, penY);
 
 			// Set font and draw
-			tempCtx.font = `${baseFontSize}px Arial`;
+			tempCtx.font = `${baseFontSize}px ${fontFamily}`;
 			tempCtx.textAlign = 'start';
 			tempCtx.textBaseline = 'alphabetic';
 			tempCtx.fillStyle = '#ffffff';

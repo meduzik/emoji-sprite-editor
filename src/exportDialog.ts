@@ -1,4 +1,5 @@
 import type { StateManager } from './state';
+import type { FontManager } from './fontManager';
 
 const LOCALSTORAGE_KEY = 'emoji-sprite-editor-export-settings';
 
@@ -10,6 +11,7 @@ export class ExportDialog {
 	private borderCheckbox: HTMLInputElement;
 	private confirmButton: HTMLElement;
 	private stateManager: StateManager;
+	private fontManager: FontManager;
 
 	constructor(
 		modal: HTMLElement,
@@ -18,7 +20,8 @@ export class ExportDialog {
 		cropCheckbox: HTMLInputElement,
 		borderCheckbox: HTMLInputElement,
 		confirmButton: HTMLElement,
-		stateManager: StateManager
+		stateManager: StateManager,
+		fontManager: FontManager
 	) {
 		this.modal = modal;
 		this.closeButton = closeButton;
@@ -27,6 +30,7 @@ export class ExportDialog {
 		this.borderCheckbox = borderCheckbox;
 		this.confirmButton = confirmButton;
 		this.stateManager = stateManager;
+		this.fontManager = fontManager;
 
 		this.loadSettings();
 		this.setupEventListeners();
@@ -100,9 +104,10 @@ export class ExportDialog {
 		const scale = parseFloat(this.scaleInput.value) || 80;
 		const crop = this.cropCheckbox.checked;
 		const border = this.borderCheckbox.checked;
+		const fontFamily = this.fontManager.getFontFamily();
 
 		// Call the export method
-		this.stateManager.exportPNG(scale, crop, border);
+		this.stateManager.exportPNG(scale, crop, border, fontFamily);
 
 		// Close the dialog
 		this.hide();

@@ -6,6 +6,8 @@ import { PropertyPanel } from './propertyPanel';
 import { Gizmo } from './gizmo';
 import { EmojiSearcher } from './emojiSearch';
 import { ExportDialog } from './exportDialog';
+import { SettingsDialog } from './settingsDialog';
+import { FontManager } from './fontManager';
 
 class EmojiSpriteEditor {
 	private stateManager: StateManager;
@@ -15,16 +17,27 @@ class EmojiSpriteEditor {
 	private emojiSearcher: EmojiSearcher;
 	private emojiPalette: EmojiPalette;
 	private exportDialog!: ExportDialog;
+	private settingsDialog!: SettingsDialog;
+	private fontManager: FontManager;
 
 	constructor() {
 		// Initialize state manager
 		this.stateManager = new StateManager();
+
+		// Initialize font manager
+		this.fontManager = new FontManager();
 
 		// Try to load saved state from localStorage
 		const loaded = this.stateManager.loadFromLocalStorage();
 		if (loaded) {
 			console.log('Loaded state from localStorage');
 		}
+
+		// Initialize font from saved state
+		const savedFontInput = this.stateManager.getCustomFontInput();
+		this.fontManager.initialize(savedFontInput).catch(e => {
+			console.error('Failed to initialize font:', e);
+		});
 
 		// Get DOM elements
 		const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -34,7 +47,7 @@ class EmojiSpriteEditor {
 		this.renderer = new CanvasRenderer(canvas);
 
 		// Initialize gizmo
-		this.gizmo = new Gizmo(canvas, this.renderer, this.stateManager);
+		this.gizmo = new Gizmo(canvas, this.renderer, this.stateManager, this.fontManager);
 
 		// Initialize emoji searcher
 		this.emojiSearcher = new EmojiSearcher();
@@ -84,24 +97,6 @@ class EmojiSpriteEditor {
 			this.stateManager
 		);
 
-		// Setup origin visibility toggle
-		const showOriginCheckbox = document.getElementById('show-origin') as HTMLInputElement;
-		showOriginCheckbox.addEventListener('change', () => {
-			this.stateManager.setShowOrigin(showOriginCheckbox.checked);
-		});
-
-		// Setup axes on top toggle
-		const axesOnTopCheckbox = document.getElementById('axes-on-top') as HTMLInputElement;
-		axesOnTopCheckbox.addEventListener('change', () => {
-			this.stateManager.setAxesOnTop(axesOnTopCheckbox.checked);
-		});
-
-		// Setup border on top toggle
-		const borderOnTopCheckbox = document.getElementById('border-on-top') as HTMLInputElement;
-		borderOnTopCheckbox.addEventListener('change', () => {
-			this.stateManager.setBorderOnTop(borderOnTopCheckbox.checked);
-		});
-
 		// Setup Clear button
 		const clearBtn = document.getElementById('clear-canvas') as HTMLButtonElement;
 		clearBtn.addEventListener('click', () => {
@@ -111,8 +106,14 @@ class EmojiSpriteEditor {
 		// Setup export/import
 		this.setupExportImport();
 
+		// Setup settings dialog
+		this.setupSettingsDialog();
+
 		// Setup export PNG dialog
 		this.setupExportDialog();
+
+		// Setup settings dialog
+		this.setupSettingsDialog();
 
 		// Setup help modal
 		this.setupHelpModal();
@@ -124,7 +125,11 @@ class EmojiSpriteEditor {
 		this.stateManager.onChange(() => {
 			this.render();
 			this.propertyPanel.update();
+			this.applyCustomFont();
 		});
+
+		// Apply initial custom font
+		this.applyCustomFont();
 
 		// Handle window resize
 		window.addEventListener('resize', () => this.onResize());
@@ -191,6 +196,7 @@ class EmojiSpriteEditor {
 				results.forEach(emoji => {
 					const item = document.createElement('div');
 					item.className = 'emoji-item';
+					item.style.fontFamily = this.fontManager.getFontFamily();
 					// Apply skin tone if supported and selected
 					const skinToneKey = skinToneSelector.value;
 					const skinToneChar = skinTones[skinToneKey];
@@ -300,13 +306,63 @@ class EmojiSpriteEditor {
 			cropCheckbox,
 			borderCheckbox,
 			confirmBtn,
-			this.stateManager
+			this.stateManager,
+			this.fontManager
 		);
 
 		// Show dialog when button is clicked
 		showDialogBtn.addEventListener('click', () => {
 			this.exportDialog.show();
 		});
+	}
+
+	private setupSettingsDialog() {
+		const settingsModal = document.getElementById('settings-modal') as HTMLElement;
+		const closeSettingsBtn = document.getElementById('close-settings') as HTMLElement;
+		const showOriginCheckbox = document.getElementById('settings-show-origin') as HTMLInputElement;
+		const axesOnTopCheckbox = document.getElementById('settings-axes-on-top') as HTMLInputElement;
+		const borderOnTopCheckbox = document.getElementById('settings-border-on-top') as HTMLInputElement;
+		const fontInput = document.getElementById('settings-font') as HTMLTextAreaElement;
+		const fontApplyBtn = document.getElementById('settings-font-apply') as HTMLButtonElement;
+		const notoEmojiLink = document.getElementById('use-noto-color-emoji') as HTMLAnchorElement;
+		const openmojiLink = document.getElementById('use-openmoji') as HTMLAnchorElement;
+		const twemojiLink = document.getElementById('use-twemoji') as HTMLAnchorElement;
+		const showDialogBtn = document.getElementById('settings-button') as HTMLButtonElement;
+
+		this.settingsDialog = new SettingsDialog(
+			settingsModal,
+			closeSettingsBtn,
+			showOriginCheckbox,
+			axesOnTopCheckbox,
+			borderOnTopCheckbox,
+			fontInput,
+			fontApplyBtn,
+			notoEmojiLink,
+			openmojiLink,
+			twemojiLink,
+			this.stateManager,
+			this.fontManager
+		);
+
+		// Show dialog when button is clicked
+		showDialogBtn.addEventListener('click', () => {
+			this.settingsDialog.show();
+		});
+	}
+
+	private applyCustomFont() {
+		const customFont = this.fontManager.getFontFamily();
+		this.emojiPalette.setCustomFont(customFont);
+		this.propertyPanel.setCustomFont(customFont);
+		
+		// Apply font to search results
+		const searchResults = document.getElementById('emoji-search-results') as HTMLElement;
+		if (searchResults) {
+			const items = searchResults.querySelectorAll('.emoji-item');
+			items.forEach(item => {
+				(item as HTMLElement).style.fontFamily = customFont;
+			});
+		}
 	}
 
 	private setupKeyboardShortcuts() {
@@ -426,9 +482,10 @@ class EmojiSpriteEditor {
 
 	private render() {
 		const state = this.stateManager.getState();
+		const customFont = this.fontManager.getFontFamily();
 		
 		// Render sprites
-		this.renderer.render(state.sprites, state.showOrigin, state.axesOnTop, state.borderOnTop);
+		this.renderer.render(state.sprites, state.showOrigin, state.axesOnTop, state.borderOnTop, customFont);
 
 		// Draw gizmo for selected sprite
 		if (state.selectedId) {

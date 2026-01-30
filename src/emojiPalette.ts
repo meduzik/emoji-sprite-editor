@@ -40,6 +40,7 @@ export class EmojiPalette {
 	private addButtonEl: HTMLButtonElement;
 	private customEmojis: string[] = [];
 	private onEmojiSelect: (emoji: string) => void;
+	private customFont: string = 'Arial';
 
 	constructor(
 		paletteEl: HTMLElement,
@@ -85,6 +86,7 @@ export class EmojiPalette {
 			const item = document.createElement('div');
 			item.className = 'emoji-item';
 			item.textContent = emoji;
+			item.style.fontFamily = this.customFont;
 			item.addEventListener('click', () => this.onEmojiSelect(emoji));
 			item.addEventListener('contextmenu', (e) => {
 				e.preventDefault();
@@ -104,6 +106,7 @@ export class EmojiPalette {
 			item.className = 'custom-emoji-item';
 			item.textContent = emoji;
 			item.dataset.emoji = emoji;
+			item.style.fontFamily = this.customFont;
 			
 			item.addEventListener('click', () => {
 				this.onEmojiSelect(emoji);
@@ -152,5 +155,10 @@ export class EmojiPalette {
 		this.customEmojis = this.customEmojis.filter(e => e !== emoji);
 		this.saveCustomEmojis();
 		this.renderCustomList();
+	}
+
+	public setCustomFont(font: string) {
+		this.customFont = font;
+		this.render();
 	}
 }

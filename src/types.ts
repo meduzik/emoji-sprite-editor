@@ -16,6 +16,7 @@ export interface EditorState {
 	showOrigin: boolean;
 	axesOnTop: boolean;
 	borderOnTop: boolean;
+	customFont: string;
 }
 
 export interface Point {

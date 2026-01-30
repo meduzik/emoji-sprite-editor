@@ -1,6 +1,7 @@
 import type { SpriteObject, Point } from './types';
 import type { CanvasRenderer } from './canvas';
 import type { StateManager } from './state';
+import type { FontManager } from './fontManager';
 
 const HANDLE_SIZE = 8; // Visual size
 const HANDLE_HIT_SIZE = 14; // Hit area size
@@ -31,6 +32,7 @@ export class Gizmo {
 	private ctx: CanvasRenderingContext2D;
 	private renderer: CanvasRenderer;
 	private stateManager: StateManager;
+	private fontManager: FontManager;
 	private mode: InteractionMode = InteractionMode.None;
 	private dragStartPos: Point | null = null;
 	private dragStartSpriteState: Partial<SpriteObject> | null = null;
@@ -39,7 +41,8 @@ export class Gizmo {
 	constructor(
 		canvas: HTMLCanvasElement,
 		renderer: CanvasRenderer,
-		stateManager: StateManager
+		stateManager: StateManager,
+		fontManager: FontManager
 	) {
 		this.canvas = canvas;
 		const ctx = canvas.getContext('2d');
@@ -47,6 +50,7 @@ export class Gizmo {
 		this.ctx = ctx;
 		this.renderer = renderer;
 		this.stateManager = stateManager;
+		this.fontManager = fontManager;
 
 		this.setupEventListeners();
 	}
@@ -97,7 +101,8 @@ export class Gizmo {
 
 			// Check which sprite is actually at this location (could be a different sprite on top)
 			const sprites = this.stateManager.getState().sprites;
-			const hitId = this.renderer.hitTest(sprites, mousePos.x, mousePos.y);
+			const customFont = this.fontManager.getFontFamily();
+			const hitId = this.renderer.hitTest(sprites, mousePos.x, mousePos.y, customFont);
 			
 			if (hitId && hitId !== selected.id) {
 				// Clicked on a different sprite - select it and start dragging
@@ -123,7 +128,8 @@ export class Gizmo {
 
 		// No selected sprite or clicked outside selected sprite - do hit test
 		const sprites = this.stateManager.getState().sprites;
-		const hitId = this.renderer.hitTest(sprites, mousePos.x, mousePos.y);
+		const customFont = this.fontManager.getFontFamily();
+		const hitId = this.renderer.hitTest(sprites, mousePos.x, mousePos.y, customFont);
 		
 		if (hitId) {
 			// Found a sprite - select it and start dragging
@@ -310,7 +316,8 @@ export class Gizmo {
 	}
 
 	drawGizmo(sprite: SpriteObject) {
-		const bounds = this.renderer.getSpriteBounds(sprite);
+		const customFont = this.fontManager.getFontFamily();
+		const bounds = this.renderer.getSpriteBounds(sprite, customFont);
 		const screenPos = this.renderer.worldToScreen(sprite.x, sprite.y);
 
 		this.ctx.save();
@@ -377,7 +384,8 @@ export class Gizmo {
 	}
 
 	private getHandles(sprite: SpriteObject): Handle[] {
-		const bounds = this.renderer.getSpriteBounds(sprite);
+		const customFont = this.fontManager.getFontFamily();
+		const bounds = this.renderer.getSpriteBounds(sprite, customFont);
 		const handles: Handle[] = [];
 
 		// Define handles in local (unrotated) coordinates with margin

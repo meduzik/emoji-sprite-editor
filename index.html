@@ -6,6 +6,7 @@
     <title>Emoji Sprite Editor</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/twemoji-colr-font@15.0.3/twemoji.min.css" />
   </head>
   <body>
     <div id="app">
@@ -44,21 +45,8 @@
       <div class="right-panel">
         <div class="panel-header">
           <h2>Properties</h2>
+          <button id="settings-button" class="help-button" title="Settings">⚙️</button>
           <button id="help-button" class="help-button" title="Help">❓</button>
-        </div>
-        <div class="view-options">
-          <label class="checkbox-label">
-            <input type="checkbox" id="show-origin" checked />
-            <span>Guides</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" id="axes-on-top" />
-            <span>Axes on top</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" id="border-on-top" />
-            <span>Border on top</span>
-          </label>
         </div>
         <div id="property-panel">
           <div class="property-group">
@@ -152,6 +140,43 @@
           </div>
           <div class="button-group">
             <button id="export-png-confirm">Export</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="settings-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Settings</h2>
+          <button id="close-settings" class="close-button">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="control-group">
+            <h3>View Options</h3>
+            <label>
+              <input type="checkbox" id="settings-show-origin" checked>
+              Guides
+            </label>
+            <label>
+              <input type="checkbox" id="settings-axes-on-top">
+              Axes on top
+            </label>
+            <label>
+              <input type="checkbox" id="settings-border-on-top">
+              Border on top
+            </label>
+          </div>
+          <div class="control-group">
+            <h3>Font</h3>
+            <label for="settings-font">Font family or URL</label>
+            <textarea id="settings-font" rows="3" placeholder="Arial&#10;@googlefont:Noto Color Emoji&#10;https://example.com/font.woff2"></textarea>
+            <small style="display: block; margin-top: 4px; color: #888;">
+              Enter a font family name, @googlefont:Name for Google Fonts, or a URL starting with "http"
+              <br>
+              <a href="#" id="use-noto-color-emoji" style="color: #4fc3f7; text-decoration: none;">Use Noto Color Emoji</a> | <a href="#" id="use-openmoji" style="color: #4fc3f7; text-decoration: none;">Use OpenMoji</a> | <a href="#" id="use-twemoji" style="color: #4fc3f7; text-decoration: none;">Use Twemoji</a>
+            </small>
+            <button id="settings-font-apply" style="margin-top: 8px;">Apply Font</button>
           </div>
         </div>
       </div>

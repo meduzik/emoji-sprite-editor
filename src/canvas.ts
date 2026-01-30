@@ -28,7 +28,7 @@ export class CanvasRenderer {
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	}
 
-	render(sprites: SpriteObject[], showOrigin: boolean = true, axesOnTop: boolean = false, borderOnTop: boolean = false) {
+	render(sprites: SpriteObject[], showOrigin: boolean = true, axesOnTop: boolean = false, borderOnTop: boolean = false, customFont: string = 'Arial') {
 		this.clear();
 
 		// Draw axes and border below sprites if not on top
@@ -44,7 +44,7 @@ export class CanvasRenderer {
 
 		// Draw all sprites
 		sorted.forEach(sprite => {
-			this.drawSprite(sprite);
+			this.drawSprite(sprite, customFont);
 		});
 
 		// Draw axes and border on top if enabled
@@ -94,10 +94,10 @@ export class CanvasRenderer {
 		);
 	}
 
-	drawSprite(sprite: SpriteObject) {
+	drawSprite(sprite: SpriteObject, customFont: string = 'Arial') {
 		this.ctx.save();
 
-		const bounds = this.getSpriteBounds(sprite);
+		const bounds = this.getSpriteBounds(sprite, customFont);
 
 		// Translate to world position
 		const screenX = this.centerX + sprite.x;
@@ -110,7 +110,7 @@ export class CanvasRenderer {
 
 		// Set font size (base size, scaling applied via transform)
 		const fontSize = BASE_FONT_SIZE;
-		this.ctx.font = `${fontSize}px Arial`;
+		this.ctx.font = `${fontSize}px ${customFont}`;
 		this.ctx.textAlign = 'start';
 		this.ctx.textBaseline = 'alphabetic';
 
@@ -121,9 +121,9 @@ export class CanvasRenderer {
 		this.ctx.restore();
 	}
 
-	getSpriteBounds(sprite: SpriteObject): Bounds {
+	getSpriteBounds(sprite: SpriteObject, customFont: string = 'Arial'): Bounds {
 		const fontSize = BASE_FONT_SIZE;
-		this.ctx.font = `${fontSize}px Arial`;
+		this.ctx.font = `${fontSize}px ${customFont}`;
 		const metrics = this.ctx.measureText(sprite.emoji);
 
 		let left = metrics.actualBoundingBoxLeft;
@@ -168,8 +168,8 @@ export class CanvasRenderer {
 	}
 
 	// Test if a point in world space is inside a sprite (accounting for rotation)
-	isPointInSprite(sprite: SpriteObject, worldX: number, worldY: number): boolean {
-		const bounds = this.getSpriteBounds(sprite);
+	isPointInSprite(sprite: SpriteObject, worldX: number, worldY: number, customFont: string = 'Arial'): boolean {
+		const bounds = this.getSpriteBounds(sprite, customFont);
 		
 		// Transform the point from world space to the sprite's local (rotated) space
 		const localX = worldX - sprite.x;
@@ -191,12 +191,12 @@ export class CanvasRenderer {
 		);
 	}
 
-	hitTest(sprites: SpriteObject[], worldX: number, worldY: number): string | null {
+	hitTest(sprites: SpriteObject[], worldX: number, worldY: number, customFont: string = 'Arial'): string | null {
 		// Test in reverse zIndex order (top to bottom)
 		const sorted = [...sprites].sort((a, b) => b.zIndex - a.zIndex);
 
 		for (const sprite of sorted) {
-			if (this.isPointInSprite(sprite, worldX, worldY)) {
+			if (this.isPointInSprite(sprite, worldX, worldY, customFont)) {
 				return sprite.id;
 			}
 		}

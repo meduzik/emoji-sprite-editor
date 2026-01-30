@@ -15,6 +15,7 @@ export class PropertyPanel {
 	private deleteBtn: HTMLButtonElement;
 	private stateManager: StateManager;
 	private isUpdating: boolean = false;
+	private customFont: string = 'Arial';
 
 	constructor(
 		panelEl: HTMLElement,
@@ -126,6 +127,7 @@ export class PropertyPanel {
 		if (selected) {
 			this.panelEl.classList.remove('disabled');
 			this.textInput.value = selected.emoji;
+			this.textInput.style.fontFamily = this.customFont;
 			this.xInput.value = selected.x.toFixed(0);
 			this.yInput.value = selected.y.toFixed(0);
 			this.rotationInput.value = selected.rotation.toFixed(0);
@@ -142,5 +144,10 @@ export class PropertyPanel {
 		}
 
 		this.isUpdating = false;
+	}
+
+	public setCustomFont(font: string) {
+		this.customFont = font;
+		this.textInput.style.fontFamily = font;
 	}
 }

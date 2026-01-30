@@ -10,8 +10,12 @@ const SYSTEM_DEFAULT_FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Robo
 export class FontManager {
 	private fontStyleElement: HTMLStyleElement | null = null;
 	private googleFontLink: HTMLLinkElement | null = null;
-	private currentUserInput: string = '@googlefont:Noto Color Emoji';
-	private currentFontFamily: string = 'Noto Color Emoji';
+	private currentUserInput: string = '';
+	private currentFontFamily: string = SYSTEM_DEFAULT_FONT;
+
+
+	constructor() {
+	}
 
 	/**
 	 * Load a font from user input (font family name or URL)
@@ -36,30 +40,54 @@ export class FontManager {
 			const fontName = this.parseGoogleFont(trimmedInput);
 			this.createGoogleFontLink(fontName);
 			this.currentFontFamily = fontName;
-			
-			// Load the font
-			await document.fonts.load(`80px "${this.currentFontFamily}"`);
+			await this.waitForFontLoad(this.currentFontFamily);
 		}
 		// Check if it's a URL
 		else if (this.isUrl(trimmedInput)) {
-			// It's a URL - create @font-face and use our custom family name
 			this.createFontFace(trimmedInput);
 			this.currentFontFamily = CUSTOM_FONT_FAMILY_NAME;
-			
-			// Load the font
-			await document.fonts.load(`80px ${this.currentFontFamily}`);
+			await this.waitForFontLoad(this.currentFontFamily);
 		} else {
-			// It's a font family name - use it directly
 			this.removeFontResources();
 			this.currentFontFamily = trimmedInput;
-			
-			// Try to load the font (may fail silently if font doesn't exist)
 			try {
-				await document.fonts.load(`80px ${this.currentFontFamily}`);
+				await this.waitForFontLoad(this.currentFontFamily);
 			} catch (e) {
 				console.warn('Font may not be available:', trimmedInput);
 			}
 		}
+	}
+
+	/**
+	 * Wait for all fonts to finish loading (using document.fonts.onloadingdone)
+	 * Resolves when the specified font family is loaded or timeout occurs
+	 */
+	waitForFontLoad(fontFamily: string, timeoutMs: number = 4000): Promise<void> {
+		return new Promise((resolve, reject) => {
+			let resolved = false;
+			const onDone = () => {
+				if (!resolved) {
+					resolved = true;
+					clearTimeout(timer);
+					resolve();
+				}
+			};
+			const timer = setTimeout(() => {
+				if (!resolved) {
+					resolved = true;
+					document.fonts.removeEventListener('loadingdone', onDone);
+					reject(new Error('Font load timeout'));
+				}
+			}, timeoutMs);
+			document.fonts.addEventListener('loadingdone', onDone, { once: true });
+			// Fallback: if font is already loaded, resolve immediately
+			if (document.fonts.check(`80px "${fontFamily}"`)) {
+				clearTimeout(timer);
+				document.fonts.removeEventListener('loadingdone', onDone);
+				resolved = true;
+				resolve();
+			}
+		});
 	}
 
 	/**
@@ -85,8 +113,7 @@ export class FontManager {
 		} catch (e) {
 			console.error('Failed to initialize font:', e);
 			// Fall back to Noto Color Emoji
-			this.currentUserInput = '@googlefont:Noto Color Emoji';
-			this.currentFontFamily = 'Noto Color Emoji';
+			await this.load('@googlefont:Noto Color Emoji');
 		}
 	}
 

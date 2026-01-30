@@ -58,7 +58,7 @@ export class SettingsDialog {
 			const stored = localStorage.getItem(SETTINGS_KEY);
 			if (stored) {
 				const settings: Settings = JSON.parse(stored);
-				this.fontInput.value = settings.font || 'Arial';
+				this.fontInput.value = settings.font;
 			}
 		} catch (e) {
 			console.error('Failed to load settings:', e);
@@ -94,10 +94,20 @@ export class SettingsDialog {
 		this.closeButton.addEventListener('click', () => this.hide());
 
 		// Close on backdrop click
-		this.modal.addEventListener('click', (e) => {
+		// Only close if mousedown and mouseup both occur on the backdrop
+		let backdropMouseDown = false;
+		this.modal.addEventListener('mousedown', (e) => {
 			if (e.target === this.modal) {
+				backdropMouseDown = true;
+			} else {
+				backdropMouseDown = false;
+			}
+		});
+		this.modal.addEventListener('mouseup', (e) => {
+			if (e.target === this.modal && backdropMouseDown) {
 				this.hide();
 			}
+			backdropMouseDown = false;
 		});
 
 		// Close on ESC key

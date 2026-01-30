@@ -110,7 +110,7 @@ export class CanvasRenderer {
 
 		// Set font size (base size, scaling applied via transform)
 		const fontSize = BASE_FONT_SIZE;
-		this.ctx.font = `${fontSize}px ${customFont}`;
+		this.ctx.font = `${fontSize}px ${JSON.stringify(customFont)}`;
 		this.ctx.textAlign = 'start';
 		this.ctx.textBaseline = 'alphabetic';
 
@@ -123,7 +123,7 @@ export class CanvasRenderer {
 
 	getSpriteBounds(sprite: SpriteObject, customFont: string = 'Arial'): Bounds {
 		const fontSize = BASE_FONT_SIZE;
-		this.ctx.font = `${fontSize}px ${customFont}`;
+		this.ctx.font = `${fontSize}px ${JSON.stringify(customFont)}`;
 		const metrics = this.ctx.measureText(sprite.emoji);
 
 		let left = metrics.actualBoundingBoxLeft;
